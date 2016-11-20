@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Billiard</title>
+    <style>
+        .page-header {
+            text-align: center;
+        }
+        #table {
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            margin-left: -45%;
+            width: 80%;
+            height: 60vh;
+            background-color: darkgreen;
+            border: 25px solid saddlebrown;
+        }
+        #ball {
+            width: 20px;
+            height: 20px;
+            position: absolute;
+            top: 50px;
+            left: 50px;
+            border-radius: 50%;
+            background-color: yellow;
+            /*border: 1px solid black;*/
+            box-shadow: 1px 1px 2px;
+        }
+        #kick {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: papayawhip;
+            border: 1px solid white;
+            -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
+            cursor: default;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-header">
+        <label for="angle">Angle: </label><input type="number" id="angle" value="30" size="5">
+        <label for="speed">Speed: </label><input type="range"
+                                                 id="speed"
+                                                 min="50"
+                                                 max="5000"
+                                                 value="100"
+                                                 size="5"
+                                                 onchange="run(angle.value,speed.value)">
+        <button onclick="run(angle.value,speed.value)">RUN</button>
+        <button onclick="stop()">STOP</button>
+    </div>
+    <div id="table">
+        <div id="ball"></div>
+        <div id="kick"></div>
+    </div>
+    <script>
+        var table = document.getElementById("table");
+        var ball = document.getElementById("ball");
+        var kick = document.getElementById("kick");
+        var si;
+        function stop() {
+            clearInterval(si)
+        }
+        function run(angle, speed) {
+            if (si != undefined) stop();
+            ball.speed = speed;
+            var left = ball.offsetLeft;
+            var top = ball.offsetTop;
+            var dx = Math.cos(angle * Math.PI / 180);
+            var dy = Math.sin(angle * Math.PI / 180);
+            si = setInterval(function () {
+                if (top > table.clientHeight - ball.offsetHeight || top < 0) dy = -dy;
+                if (left > table.clientWidth - ball.offsetWidth || left < 0) dx = -dx;
+                top += dy * ball.speed / 100;
+                left += dx * ball.speed / 100;
+                ball.style.top = top + "px";
+                ball.style.left = left + "px";
+            }, 10)
+        }
+        kick.onmousedown = function (ev) {
+            var top = kick.offsetTop;
+            var left = kick.offsetLeft;
+            var mouseX = ev.clientX;
+            var mouseY = ev.clientY;
+            kick.onmousemove = function (em) {
+                var dx = left + em.clientX - mouseX;
+                var dy = top + em.clientY - mouseY;
+                if (dx <= table.clientWidth - kick.offsetWidth && dx >= 0)
+                    kick.style.left = dx + "px";
+                if (dy <= table.clientHeight - kick.offsetHeight && dy >= 0)
+                    kick.style.top = dy + "px";
+            };
+            var onmouseup = document.onmouseup;
+            document.onmouseup = function () {
+                kick.onmousemove = null;
+                document.onmouseup = onmouseup;
+            }
+        }
+    </script>
+</body>
+</html>

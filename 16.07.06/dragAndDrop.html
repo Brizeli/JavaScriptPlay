@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Drag And Drop</title>
+    <style>
+        body {
+            margin: 0;
+        }
+        #d {
+            top: 10px;
+            left: 10px;
+            width: 50px;
+            height: 50px;
+            background-color: white;
+            border: 1px solid black;
+            position: absolute;
+            border-radius: 50%;
+            z-index: 1;
+            tab-index: -1;
+            text-align: center;
+            vertical-align: middle;
+            line-height: 50px;
+            font-family: Arial, serif;
+            font-size: 25px;
+            -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
+        }
+        #frame {
+            position: absolute;
+            width: 90vw;
+            height: 90vh;
+            margin: 4vh 4vw;
+            border: 1px solid black;
+        }
+        .s {
+            width: 10px;
+            height: 10px;
+            position: absolute;
+            /*background-color: lime;*/
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <div id="frame">
+        <div id="d">0</div>
+    </div>
+    <script>
+        var frame = document.getElementById("frame");
+        var frameHeight = frame.clientHeight;
+        var frameWidth = frame.clientWidth;
+        var d = document.getElementById("d");
+        var N_SQUARES = 200;
+        var count = 0;
+        function rndColor() {
+            return Math.floor(Math.random() * 255);
+        }
+        for (var i = 0; i < N_SQUARES; i++) {
+            var s = document.createElement("div");
+            document.getElementById("frame").appendChild(s);
+            s.classList.add("s");
+            s.style.backgroundColor = "rgb(" + rndColor() + "," + rndColor() + "," + rndColor() + ")";
+            s.style.top = Math.random() * (frameHeight - s.offsetHeight) + "px";
+            s.style.left = Math.random() * (frameWidth - s.offsetWidth) + "px";
+        }
+        drugAndDrop(d);
+        function drugAndDrop(element) {
+            element.onmousedown = function (e) {
+                var top0 = element.offsetTop;
+                var left0 = element.offsetLeft;
+                var width = element.offsetWidth;
+                var height = element.offsetHeight;
+                var msX0 = e.clientX;
+                var msY0 = e.clientY;
+                element.style.cursor = "pointer";
+                element.onmousemove = function (em) {
+                    if (element.offsetTop > frameHeight - height) {
+                        element.style.top = frameHeight - height + "px";
+                        element.onmousemove = null;
+                        return;
+                    }
+                    if (element.offsetLeft > frameWidth - width) {
+                        element.style.left = frameWidth - width + "px";
+                        element.onmousemove = null;
+                        return;
+                    }
+                    if (element.offsetTop < 0) {
+                        element.style.top = 0;
+                        element.onmousemove = null;
+                        return;
+                    }
+                    if (element.offsetLeft < 0) {
+                        element.style.left = 0;
+                        element.onmousemove = null;
+                        return;
+                    }
+                    element.style.top = (top0 + em.clientY - msY0) + "px";
+                    element.style.left = (left0 + em.clientX - msX0) + "px";
+                    checkCollisions(element);
+                };
+                var onmouseup = document.onmouseup;
+                document.onmouseup = function () {
+                    element.style.cursor = "default";
+                    element.onmousemove = null;
+                    document.onmouseup = onmouseup;
+                }
+            }
+        }
+        function checkCollisions(element) {
+            var s = document.getElementsByClassName("s");
+            var Xoc = element.offsetLeft;
+            var Yoc = element.offsetTop;
+            var R = element.offsetHeight / 2;
+            var Ocx = Xoc + R;
+            var Ocy = Yoc + R;
+            for (var i = 0; i < s.length; i++)
+                if (intersect(s[i])) {
+                    s[i].style.display = "none";
+                    d.textContent = ++count;
+                    var delta = Math.floor(255 / N_SQUARES * count);
+                    d.style.backgroundColor = "rgb(255, " + (255 - delta) + ", " + (255 - delta) + ")";
+                }
+            function intersect(s) {
+                var Xos = s.offsetLeft;
+                var Yos = s.offsetTop;
+                var W = s.offsetWidth;
+                var H = s.offsetHeight;
+                var Osx = Xos + H / 2;
+                var Osy = Yos + W / 2;
+                if (Math.abs(Osx - Ocx) > W / 2 + R) return false;
+                if (Math.abs(Osy - Ocy) > H / 2 + R) return false;
+                return ((Xos - Ocx) * (Xos - Ocx) + (Yos - Ocy) * (Yos - Ocy)) < R * R ||
+                        (Xos + W - Ocx) * (Xos + W - Ocx) + (Yos - Ocy) * (Yos - Ocy) < R * R ||
+                        (Xos + W - Ocx) * (Xos + W - Ocx) + (Yos + H - Ocy) * (Yos + H - Ocy) < R * R ||
+                        (Xos - Ocx) * (Xos - Ocx) + (Yos + H - Ocy) * (Yos + H - Ocy) < R * R;
+            }
+        }
+    </script>
+</body>
+</html>
